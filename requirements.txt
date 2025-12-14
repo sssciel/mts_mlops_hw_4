@@ -1,0 +1,13 @@
+# dbt
+dbt-core>=1.8.0
+dbt-clickhouse>=0.6.0
+
+# Linting
+sqlfluff>=3.0.0
+sqlfluff-templater-dbt>=3.0.0
+
+# Pre-commit
+pre-commit>=3.5.0
+
+# YAML linting
+yamllint>=1.33.0
