@@ -76,7 +76,11 @@ raw (source) → staging → marts
 ### Установка зависимостей
 
 ```bash
-pip install dbt-core dbt-clickhouse sqlfluff sqlfluff-templater-dbt pre-commit
+pip install -r requirements.txt
+
+# запустить clickhouse (если надо)
+docker compose up -d
+# подождать несколько секунд (~10)
 
 cd dbt/
 dbt deps
