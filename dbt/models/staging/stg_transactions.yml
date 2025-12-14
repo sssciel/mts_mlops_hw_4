@@ -1,0 +1,129 @@
+version: 2
+
+models:
+  - name: stg_transactions
+    description: "Очищенная и нормализованная таблица транзакций. Содержит приведённые типы данных, вычисляемые поля для аналитики."
+    columns:
+      - name: transaction_id
+        description: "Уникальный суррогатный ключ транзакции"
+        data_tests:
+          - not_null
+          - unique
+      
+      - name: transaction_time
+        description: "Дата и время транзакции в формате DateTime"
+        data_tests:
+          - not_null
+      
+      - name: transaction_date
+        description: "Дата транзакции"
+        data_tests:
+          - not_null
+      
+      - name: transaction_hour
+        description: "Час транзакции (0-23)"
+        data_tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 23
+      
+      - name: day_of_week
+        description: "День недели (1-7, где 1 - понедельник)"
+        data_tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 1
+              max_value: 7
+      
+      - name: merchant_name
+        description: "Оригинальное название мерчанта"
+        data_tests:
+          - not_null
+      
+      - name: merchant_clean_name
+        description: "Название мерчанта без префикса 'fraud_'"
+      
+      - name: category
+        description: "Категория транзакции"
+        data_tests:
+          - not_null
+      
+      - name: amount
+        description: "Сумма транзакции в долларах"
+        data_tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              strictly: false
+      
+      - name: amount_bucket
+        description: "Сегмент суммы транзакции (micro, small, medium, large, xlarge, xxlarge)"
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: ['micro', 'small', 'medium', 'large', 'xlarge', 'xxlarge']
+      
+      - name: is_large_transaction
+        description: "Флаг крупной транзакции (сумма >= 500)"
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: [0, 1]
+      
+      - name: customer_id
+        description: "Суррогатный ключ клиента"
+        data_tests:
+          - not_null
+      
+      - name: customer_full_name
+        description: "Полное имя клиента"
+        data_tests:
+          - not_null
+      
+      - name: gender
+        description: "Пол клиента (M/F)"
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: ['M', 'F']
+      
+      - name: state
+        description: "Штат США"
+        data_tests:
+          - not_null
+      
+      - name: customer_lat
+        description: "Широта местоположения клиента"
+        data_tests:
+          - not_null
+      
+      - name: customer_lon
+        description: "Долгота местоположения клиента"
+        data_tests:
+          - not_null
+      
+      - name: merchant_lat
+        description: "Широта местоположения мерчанта"
+        data_tests:
+          - not_null
+      
+      - name: merchant_lon
+        description: "Долгота местоположения мерчанта"
+        data_tests:
+          - not_null
+      
+      - name: distance_km
+        description: "Расстояние между клиентом и мерчантом в километрах"
+        data_tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              strictly: false
+      
+      - name: is_fraud
+        description: "Признак мошенничества (0 - нет, 1 - да)"
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: [0, 1]

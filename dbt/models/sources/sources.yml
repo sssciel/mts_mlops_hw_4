@@ -1,0 +1,53 @@
+version: 2
+
+sources:
+  - name: transactions_db
+    description: "Исходная база данных с транзакциями"
+    database: transactions_db
+    tables:
+      - name: transactions
+        description: "Таблица с данными о транзакциях и признаком фрода"
+        columns:
+          - name: transaction_time
+            description: "Время транзакции (строка в формате YYYY-MM-DD HH:MM)"
+            data_tests:
+              - not_null
+          - name: merch
+            description: "Название мерчанта"
+            data_tests:
+              - not_null
+          - name: cat_id
+            description: "Категория транзакции (14 уникальных значений)"
+            data_tests:
+              - not_null
+          - name: amount
+            description: "Сумма транзакции"
+            data_tests:
+              - not_null
+          - name: name_1
+            description: "Имя клиента"
+          - name: name_2
+            description: "Фамилия клиента"
+          - name: gender
+            description: "Пол клиента (M/F)"
+            data_tests:
+              - accepted_values:
+                  values: ['M', 'F']
+          - name: us_state
+            description: "Штат США (50 штатов)"
+            data_tests:
+              - not_null
+          - name: lat
+            description: "Широта местоположения клиента"
+          - name: lon
+            description: "Долгота местоположения клиента"
+          - name: merchant_lat
+            description: "Широта местоположения мерчанта"
+          - name: merchant_lon
+            description: "Долгота местоположения мерчанта"
+          - name: target
+            description: "Признак фрода (0 - легитимная транзакция, 1 - мошенничество)"
+            data_tests:
+              - not_null
+              - accepted_values:
+                  values: [0, 1]

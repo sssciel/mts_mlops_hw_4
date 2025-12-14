@@ -1,0 +1,51 @@
+version: 2
+
+unit_tests:
+  - name: test_amount_bucket_segmentation
+    description: "Проверка корректной сегментации сумм транзакций макросом amount_bucket"
+    model: stg_transactions
+    given:
+      - input: source('transactions_db', 'transactions')
+        rows:
+          - {transaction_time: '2019-01-01 10:00:00', merch: 'fraud_Test1', cat_id: 'test', amount: 5, name_1: 'John', name_2: 'Doe', gender: 'M', us_state: 'CA', lat: 34.0, lon: -118.0, merchant_lat: 34.1, merchant_lon: -118.1, target: 0}
+          - {transaction_time: '2019-01-01 11:00:00', merch: 'fraud_Test2', cat_id: 'test', amount: 25, name_1: 'Jane', name_2: 'Smith', gender: 'F', us_state: 'NY', lat: 40.7, lon: -74.0, merchant_lat: 40.8, merchant_lon: -74.1, target: 0}
+          - {transaction_time: '2019-01-01 12:00:00', merch: 'fraud_Test3', cat_id: 'test', amount: 75, name_1: 'Bob', name_2: 'Johnson', gender: 'M', us_state: 'TX', lat: 29.7, lon: -95.3, merchant_lat: 29.8, merchant_lon: -95.4, target: 1}
+          - {transaction_time: '2019-01-01 13:00:00', merch: 'fraud_Test4', cat_id: 'test', amount: 250, name_1: 'Alice', name_2: 'Brown', gender: 'F', us_state: 'FL', lat: 25.7, lon: -80.1, merchant_lat: 25.8, merchant_lon: -80.2, target: 0}
+          - {transaction_time: '2019-01-01 14:00:00', merch: 'fraud_Test5', cat_id: 'test', amount: 750, name_1: 'Charlie', name_2: 'Wilson', gender: 'M', us_state: 'WA', lat: 47.6, lon: -122.3, merchant_lat: 47.7, merchant_lon: -122.4, target: 1}
+          - {transaction_time: '2019-01-01 15:00:00', merch: 'fraud_Test6', cat_id: 'test', amount: 1500, name_1: 'Diana', name_2: 'Lee', gender: 'F', us_state: 'OR', lat: 45.5, lon: -122.6, merchant_lat: 45.6, merchant_lon: -122.7, target: 0}
+    expect:
+      rows:
+        - {amount_bucket: 'micro'}
+        - {amount_bucket: 'small'}
+        - {amount_bucket: 'medium'}
+        - {amount_bucket: 'large'}
+        - {amount_bucket: 'xlarge'}
+        - {amount_bucket: 'xxlarge'}
+
+  - name: test_is_fraud_flag
+    description: "Проверка корректного преобразования target в is_fraud"
+    model: stg_transactions
+    given:
+      - input: source('transactions_db', 'transactions')
+        rows:
+          - {transaction_time: '2019-01-01 10:00:00', merch: 'fraud_Test1', cat_id: 'test', amount: 100, name_1: 'John', name_2: 'Doe', gender: 'M', us_state: 'CA', lat: 34.0, lon: -118.0, merchant_lat: 34.1, merchant_lon: -118.1, target: 0}
+          - {transaction_time: '2019-01-01 11:00:00', merch: 'fraud_Test2', cat_id: 'test', amount: 200, name_1: 'Jane', name_2: 'Smith', gender: 'F', us_state: 'NY', lat: 40.7, lon: -74.0, merchant_lat: 40.8, merchant_lon: -74.1, target: 1}
+    expect:
+      rows:
+        - {is_fraud: 0}
+        - {is_fraud: 1}
+
+  - name: test_is_large_transaction_flag
+    description: "Проверка флага крупной транзакции (amount >= 500)"
+    model: stg_transactions
+    given:
+      - input: source('transactions_db', 'transactions')
+        rows:
+          - {transaction_time: '2019-01-01 10:00:00', merch: 'fraud_Test1', cat_id: 'test', amount: 499.99, name_1: 'John', name_2: 'Doe', gender: 'M', us_state: 'CA', lat: 34.0, lon: -118.0, merchant_lat: 34.1, merchant_lon: -118.1, target: 0}
+          - {transaction_time: '2019-01-01 11:00:00', merch: 'fraud_Test2', cat_id: 'test', amount: 500, name_1: 'Jane', name_2: 'Smith', gender: 'F', us_state: 'NY', lat: 40.7, lon: -74.0, merchant_lat: 40.8, merchant_lon: -74.1, target: 0}
+          - {transaction_time: '2019-01-01 12:00:00', merch: 'fraud_Test3', cat_id: 'test', amount: 1000, name_1: 'Bob', name_2: 'Johnson', gender: 'M', us_state: 'TX', lat: 29.7, lon: -95.3, merchant_lat: 29.8, merchant_lon: -95.4, target: 1}
+    expect:
+      rows:
+        - {is_large_transaction: 0}
+        - {is_large_transaction: 1}
+        - {is_large_transaction: 1}

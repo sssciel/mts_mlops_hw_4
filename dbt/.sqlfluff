@@ -1,0 +1,51 @@
+[sqlfluff]
+dialect = clickhouse
+templater = dbt
+runaway_limit = 10
+max_line_length = 120
+indent_unit = space
+
+[sqlfluff:indentation]
+tab_space_size = 4
+indent_unit = space
+
+[sqlfluff:layout:type:comma]
+spacing_before = touch
+line_position = trailing
+
+[sqlfluff:rules:capitalisation.keywords]
+capitalisation_policy = upper
+
+[sqlfluff:rules:capitalisation.identifiers]
+capitalisation_policy = lower
+
+[sqlfluff:rules:capitalisation.functions]
+extended_capitalisation_policy = upper
+
+[sqlfluff:rules:capitalisation.literals]
+capitalisation_policy = upper
+
+[sqlfluff:rules:aliasing.table]
+aliasing = explicit
+
+[sqlfluff:rules:aliasing.column]
+aliasing = explicit
+
+[sqlfluff:rules:aliasing.expression]
+allow_scalar = False
+
+[sqlfluff:rules:ambiguous.column_references]
+group_by_and_order_by_style = implicit
+
+[sqlfluff:templater:dbt]
+project_dir = .
+profiles_dir = .
+profile = fraud_analytics
+target = dev
+
+[sqlfluff:templater:jinja]
+apply_dbt_builtins = True
+
+# Исключаем определённые правила для совместимости с dbt
+[sqlfluff:rules]
+exclude_rules = LT05, ST06, RF04, AM04

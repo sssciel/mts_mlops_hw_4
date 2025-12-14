@@ -1,0 +1,34 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+        args: [--unsafe]
+      - id: check-added-large-files
+
+  - repo: https://github.com/sqlfluff/sqlfluff
+    rev: 3.0.0
+    hooks:
+      - id: sqlfluff-lint
+        args: [--dialect, clickhouse]
+        additional_dependencies: ['dbt-clickhouse', 'sqlfluff-templater-dbt']
+      - id: sqlfluff-fix
+        args: [--dialect, clickhouse, --force]
+        additional_dependencies: ['dbt-clickhouse', 'sqlfluff-templater-dbt']
+
+  - repo: https://github.com/adrienverge/yamllint
+    rev: v1.33.0
+    hooks:
+      - id: yamllint
+        args: [-c=.yamllint.yml]
+
+  - repo: local
+    hooks:
+      - id: dbt-compile
+        name: dbt compile
+        entry: dbt compile
+        language: system
+        pass_filenames: false
+        files: \.(sql|yml|yaml)$

@@ -1,0 +1,195 @@
+version: 2
+
+models:
+  - name: mart_daily_state_metrics
+    description: "Дневные метрики транзакций в разрезе штатов. Содержит агрегированные показатели: количество транзакций, суммы, средний чек, перцентили, доля крупных транзакций."
+    columns:
+      - name: transaction_date
+        description: "Дата транзакций"
+        data_tests:
+          - not_null
+      - name: state
+        description: "Штат США"
+        data_tests:
+          - not_null
+      - name: total_transactions
+        description: "Общее количество транзакций за день в штате"
+        data_tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 1
+      - name: fraud_rate
+        description: "Доля фродовых транзакций в процентах"
+        data_tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 100
+      - name: avg_check
+        description: "Средний чек"
+      - name: p95_amount
+        description: "95-й перцентиль суммы транзакций"
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - transaction_date
+            - state
+
+  - name: mart_fraud_by_category
+    description: "Анализ мошенничества по категориям транзакций. Выявление категорий с наибольшим уровнем fraud_rate."
+    columns:
+      - name: category
+        description: "Категория транзакции"
+        data_tests:
+          - not_null
+          - unique
+      - name: total_transactions
+        description: "Общее количество транзакций в категории"
+        data_tests:
+          - not_null
+      - name: fraud_transactions
+        description: "Количество фродовых транзакций"
+        data_tests:
+          - not_null
+      - name: fraud_rate
+        description: "Доля фрода в процентах"
+        data_tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 100
+      - name: fraud_share
+        description: "Доля категории от всех фродов"
+      - name: fraud_rate_rank
+        description: "Ранг категории по fraud_rate"
+
+  - name: mart_fraud_by_state
+    description: "Географический анализ мошенничества по штатам США. Распределение фрода, уникальные клиенты и мерчанты."
+    columns:
+      - name: state
+        description: "Штат США"
+        data_tests:
+          - not_null
+          - unique
+      - name: total_transactions
+        description: "Общее количество транзакций в штате"
+        data_tests:
+          - not_null
+      - name: fraud_rate
+        description: "Доля фрода в процентах"
+        data_tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 100
+      - name: unique_customers
+        description: "Количество уникальных клиентов"
+      - name: unique_merchants
+        description: "Количество уникальных мерчантов"
+      - name: fraud_rate_rank
+        description: "Ранг штата по fraud_rate"
+
+  - name: mart_customer_risk_profile
+    description: "Профиль риска клиентов. Сегментация по уровню риска (HIGH/MEDIUM/LOW) на основе истории транзакций."
+    columns:
+      - name: customer_id
+        description: "Уникальный идентификатор клиента"
+        data_tests:
+          - not_null
+          - unique
+      - name: customer_full_name
+        description: "Полное имя клиента"
+        data_tests:
+          - not_null
+      - name: risk_level
+        description: "Уровень риска клиента"
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: ['HIGH', 'MEDIUM', 'LOW']
+      - name: fraud_rate_pct
+        description: "Доля фродовых транзакций клиента в процентах"
+        data_tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 100
+      - name: total_transactions
+        description: "Общее количество транзакций клиента"
+      - name: avg_check
+        description: "Средний чек клиента"
+
+  - name: mart_hourly_fraud_pattern
+    description: "Временные паттерны мошенничества. Анализ по дням недели и часам для выявления рисковых периодов."
+    columns:
+      - name: day_of_week
+        description: "День недели (1-7)"
+        data_tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 1
+              max_value: 7
+      - name: day_name
+        description: "Название дня недели"
+        data_tests:
+          - not_null
+      - name: transaction_hour
+        description: "Час транзакции (0-23)"
+        data_tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 23
+      - name: fraud_rate
+        description: "Доля фрода в процентах"
+        data_tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 100
+      - name: is_high_risk_period
+        description: "Флаг периода с повышенным риском"
+        data_tests:
+          - accepted_values:
+              values: [0, 1]
+      - name: fraud_rate_multiplier
+        description: "Отношение fraud_rate к глобальному показателю"
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - day_of_week
+            - transaction_hour
+
+  - name: mart_merchant_analytics
+    description: "Аналитика по мерчантам. Метрики оборота, fraud_rate, флаг подозрительности."
+    columns:
+      - name: merchant_name
+        description: "Название мерчанта"
+        data_tests:
+          - not_null
+          - unique
+      - name: total_transactions
+        description: "Общее количество транзакций мерчанта"
+        data_tests:
+          - not_null
+      - name: fraud_rate
+        description: "Доля фрода в процентах"
+        data_tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 100
+      - name: is_suspicious
+        description: "Флаг подозрительного мерчанта"
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: [0, 1]
+      - name: risk_level
+        description: "Уровень риска мерчанта"
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: ['HIGH', 'MEDIUM', 'LOW']
+      - name: total_turnover
+        description: "Общий оборот мерчанта"
+      - name: avg_check
+        description: "Средний чек мерчанта"
+      - name: unique_customers
+        description: "Количество уникальных клиентов"

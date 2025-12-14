@@ -1,0 +1,13 @@
+fraud_analytics:
+  target: dev
+  outputs:
+    dev:
+      type: clickhouse
+      host: localhost
+      port: 8123
+      user: default
+      password: ''
+      schema: transactions_db
+      secure: false
+      verify: false
+      connect_timeout: 10
