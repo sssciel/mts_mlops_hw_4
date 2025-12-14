@@ -1,6 +1,6 @@
 # Fraud Analytics dbt Project
 
-Проект dbt для анализа транзакций и выявления мошенничества на основе датасета ClickHouse.
+Решение 4 ДЗ MLops MTS.
 
 ## Структура проекта
 
@@ -68,10 +68,10 @@ raw (source) → staging → marts
 ## Установка и запуск
 
 ### Предварительные требования
-- Python 3.8+
+- Python 3.9+
 - dbt-core >= 1.8.0
 - dbt-clickhouse
-- ClickHouse с таблицей `transactions_db.transactions`
+- ClickHouse с `transactions_db.transactions`
 
 ### Установка зависимостей
 
@@ -85,10 +85,10 @@ dbt deps
 ### Запуск проекта
 
 ```bash
-# Полный цикл
+# Сделать все
 make all
 
-# Или отдельные команды
+# Или по частям
 make deps      # Установка зависимостей dbt
 make seed      # Загрузка seeds
 make run       # Запуск моделей
